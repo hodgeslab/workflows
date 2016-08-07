@@ -1,0 +1,33 @@
+SAMPLENAME=XXSAMPLENAMEXX
+FASTQFILE=XXFASTQFILEXX
+WORKDIR=XXWORKDIRXX
+GENOME=XXGENOMEXX
+
+BOWTIE2INDEX=/scratch/groups/crabtree/Mus_musculus/UCSC/mm9/Sequence/Bowtie2Index/genome
+BAMFILE=accepted_hits.bam
+COUNTSFILE=htseq_counts.txt
+
+GTFFILE=~/data/UCSC_Downloads/${GENOME}/refGene_${GENOME}.gtf
+
+GENOMEFILE=~/data/UCSC_Downloads/${GENOME}/chrom.sizes
+
+cd $WORKDIR
+
+NAME=`basename $FASTQFILE | sed s/'.bed'//`
+PATH=$PATH:/scratch/groups/crabtree/bowtie2-2.1.0
+
+
+# ~/src/tophat-2.1.0.Linux_x86_64/tophat -o $NAME $BOWTIE2INDEX $FASTQFILE
+mkdir $NAME
+
+if [ -d $NAME ]; then
+  MAXLEN=100
+  ln -s $NAME/$COUNTSFILE ${SAMPLENAME}_counts.txt
+  ln -s $NAME/$BAMFILE ${SAMPLENAME}.bam
+  cd $NAME
+  bedtools bedtobam -i ../$FASTQFILE -g $GENOMEFILE | samtools view -h - | \
+  awk -v maxlen=$MAXLEN 'BEGIN{OFS="\t"; while(i++<maxlen){seq=seq "A"; qual=qual "F"}}{if($1~/^@/) print; else {len = $6; gsub(/[^[:digit:]]/,"",len); $10=substr(seq,1,len); $11=substr(qual,1,len); print}}' | \
+  samtools sort - -o tmp > $BAMFILE
+  htseq-count -f bam -r pos --stranded=no $BAMFILE $GTFFILE > $COUNTSFILE
+fi
+
