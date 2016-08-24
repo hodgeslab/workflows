@@ -28,14 +28,14 @@ dds <- DESeqDataSetFromHTSeqCount(sampleTable = sampleTable, directory = ".", de
 dds$condition <- relevel(dds$condition, "control")
 
 # do everything automagically
-# dds <- DESeq(dds, fitType="local")
+dds <- DESeq(dds, fitType="local")
 # or manally
 # because ChIP seq has background peak calls, we normalize not to housekeeping genes:
 # dds <- estimateSizeFactors(dds)
 # dds <- estimateSizeFactors(dds, controlGenes = (rowMeans(countdata) > 1000))
 # but instead set the sizeFactors to be the total number of reads within peaks
 # sizeFactors(dds) <- colSums(countdata) / 1e6
-sizeFactors(dds) <- colSums(counts(dds)) / 1e6
+# sizeFactors(dds) <- colSums(counts(dds)) / 1e6
 
 # we can also ignore the bottom 10% of total peaks and assume them to be background
 # bgFrac <- 0.10
@@ -49,8 +49,8 @@ sizeFactors(dds) <- colSums(counts(dds)) / 1e6
 # pseudoPeakOrder <- pseudoPeakOrder[c(1:round(topFrac * length(pseudoPeakOrder)))]
 # sizeFactors(dds) <- colSums(countdata[pseudoPeakOrder, ]) / 1e6
 
-dds <- estimateDispersions(dds, fitType = "local")
-dds <- nbinomWaldTest(dds)
+#dds <- estimateDispersions(dds, fitType = "local")
+#dds <- nbinomWaldTest(dds)
 
 # plot dispersions
 pdf("qc-dispersions.pdf")
