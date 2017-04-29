@@ -1,0 +1,16 @@
+WORKDIR=XXWORKDIRXX
+READ1=XXREAD1XX
+READ2=XXREAD2XX
+SAMPLENAME=XXSAMPLENAMEXX
+GENOME=XXGENOMEXX
+
+cd $WORKDIR
+if [ -r ${READ1} ]; then gunzip ${READ1}; fi
+if [ -r ${READ2} ]; then gunzip ${READ2}; fi
+
+NAME1=`basename $READ1 | sed s/.fastq.gz//`
+NAME2=`basename $READ2 | sed s/.fastq.gz//`
+
+if [ ! -r ${SAMPLENAME}.map ]; then ~/bin/bowtie --maxins 2000 -m 1 ${GENOME} -1 ${NAME1}.fastq -2 ${NAME2}.fastq ${SAMPLENAME}.map; fi
+awk 'BEGIN{FS=OFS="\t"}{if(NR==1) for(i=1; i<=NF; i++) if($i~/^chr/) chr=i; start=$(chr+1); len=length($(chr+2)); end=$(chr+1)+len); if(start<end) print $chr,start,end,len,$1,$(chr-1) }' | \
+  sort -k1,1 -k2,2n -k3,3n -k6,6 -u ${SAMPLENAME}.map > ${SAMPLENAME}_sort_noDups.bed

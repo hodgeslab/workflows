@@ -16,7 +16,7 @@ for i in `cat All_conditions.txt`; do
   BED2=${OUTDIR}/${i}.peaks.bed
   bedtools intersect -sorted -c -a ${INDIR}/${i}_peaks.bed -b ${INDIR}/${i}.fragments_${FRAGMENTLENGTH}bp.bed > $BED1
   total=`awk 'BEGIN{FS="\t"; a=0}{a=a+$NF}END{print a/1e6}' $BED1`
-  awk -v total=$total 'BEGIN{FS="\t"; OFS="\t"}{$5=$6;$6=$6/total;print}' $BED1 > $BED2
+  awk -v total=$total 'BEGIN{FS="\t"; OFS="\t"}{$NF=$NF/total;print}' $BED1 > $BED2
   rm ${BED1}
 done
 

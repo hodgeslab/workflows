@@ -131,10 +131,10 @@ maplot(res, ylim=c(-2.25,2.25), ylab="log2 fold change", xlab="log10 peak intens
 abline(h=-log2(1.5),col="#0071bc",lwd=2)
 abline(h=log2(1.5),col="#d85218",lwd=2)
 #require(calibrate)
-with(subset(res, is.element(label,c("Ezh2","Suz12","Rbbp4","Eed","Rybp","Cbx7","Rnf2","Gapdh","Hsp90","Smarca2","Actb","Smarca4"))),
-  text(log10(baseMean), log2FoldChange, labels=label, cex=1.75, col="#333333", pos=4, offset=0.5))
-with(subset(res, is.element(label,c("Ezh2","Suz12","Rbbp4","Eed","Rybp","Cbx7","Rnf2","Gapdh","Hsp90","Smarca2","Actb","Smarca4"))),
-  points(log10(baseMean), log2FoldChange, col="#aaaaaa", pch=16, cex=0.5))
+#with(subset(res, is.element(label,c("Ezh2","Suz12","Rbbp4","Eed","Rybp","Cbx7","Rnf2","Gapdh","Hsp90","Smarca2","Actb","Smarca4"))),
+#  text(log10(baseMean), log2FoldChange, labels=label, cex=1.75, col="#333333", pos=4, offset=0.5))
+#with(subset(res, is.element(label,c("Ezh2","Suz12","Rbbp4","Eed","Rybp","Cbx7","Rnf2","Gapdh","Hsp90","Smarca2","Actb","Smarca4"))),
+#  points(log10(baseMean), log2FoldChange, col="#aaaaaa", pch=16, cex=0.5))
 
 #axis(side=1,at=c(10,100,1000))
 dev.off()

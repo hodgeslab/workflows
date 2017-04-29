@@ -1,0 +1,38 @@
+WORKDIR=XXWORKDIRXX
+READ1=XXREAD1XX
+READ2=XXREAD2XX
+SAMPLENAME=XXSAMPLENAMEXX
+MAPQ=10
+TRIMSCRIPT=/home/hodgeshc/bin/pyadapter_trim.v2.py
+BOWTIE2INDEX=/scratch/groups/crabtree/Mus_musculus/UCSC/mm9/Sequence/Bowtie2Index/genome
+
+cd $WORKDIR
+
+# if [ -r ${READ1} ]; then gunzip ${READ1}; fi
+# if [ -r ${READ2} ]; then gunzip ${READ2}; fi
+
+python $TRIMSCRIPT -a $READ1 -b $READ2
+
+NAME1=`basename $READ1 | sed s/.fastq.*//`
+NAME2=`basename $READ2 | sed s/.fastq.*//`
+READ1=`basename $READ1 | sed s/.fastq.*/.trim.fastq.gz/`
+READ2=`basename $READ2 | sed s/.fastq.*/.trim.fastq.gz/`
+
+# do mapping of paired end reads
+if [ ! -r ${SAMPLENAME}.sam ]; then
+  ~/src/bowtie2-2.1.0/bowtie2 -x $BOWTIE2INDEX --maxins 2000 -N 1 -1 ${READ1} -2 ${READ2} -S ${SAMPLENAME}.sam
+fi
+
+# sort and index bam file
+if [ ! -r ${SAMPLENAME}.bam ]; then
+  samtools view -b -S ${SAMPLENAME}.sam > ${SAMPLENAME}.bam
+#  samtools index ${SAMPLENAME}.bam
+fi
+
+# make fragments bed file
+# use only properly paired (FLAG == 0x2) reads to BED format
+# remove chromosomal reads
+if [ ! -r ${SAMPLENAME}.bed ]; then
+  samtools view -bf 0x2 ${SAMPLENAME}.bam | bedtools bamtobed -i stdin -bedpe | grep -v chrM | \
+  awk -v mapq=$MAPQ 'BEGIN{FS=OFS="\t"}{if($8 >= mapq) print $1,$2,$6,$6-$2,$8,"+"}' | sort -k 1,1 -k 2,2n -k 3,3n -u > ${SAMPLENAME}.bed
+fi

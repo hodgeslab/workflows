@@ -1,6 +1,6 @@
 #!/bin/sh
 
-WORKDIR=~/data/ZhaoLab/Ben2015/ChrRNAseq
+WORKDIR=XXWORKDIRXX
 GENOME=mm9
 
 cd $WORKDIR
@@ -14,7 +14,7 @@ WORKDIR=$WORKDIR
 cd \$WORKDIR
 if [ -r ${FN} ]; then gunzip ${FN}; fi
 if [ ! -r ${NAME}.map ]; then ~/bin/bowtie -m 1 ${GENOME} ${NAME}.fastq ${NAME}.map; fi
-awk 'BEGIN{FS=OFS="\t"}{if(NR==1) for(i=1; i<=NF; i++) if(\$i~/^chr/) chr=i; start=\$(chr+1); len=length(\$(chr+2)); end=\$(chr+1)+len); if(start<end) print \$chr,start,end,len,\$1,\$(chr-1) }' | \\
-  sort -k1,1 -k2,2n -k3,3n -k6,6 -u ${NAME}.map > ${NAME}_sort_noDups.bed
+cat ${NAME}.map | awk 'BEGIN{FS=OFS="\t"}{if(NR==1) for(i=1; i<=NF; i++) if(\$i~/^chr/) chr=i; start=\$(chr+1); len=length(\$(chr+2)); end=(\$(chr+1)+len); if(start<end) print \$chr,start,end,len,\$1,\$(chr-1) }' | \\
+  sort -k1,1 -k2,2n -k3,3n -k6,6 -u > ${NAME}_sort_noDups.bed
 EOL
 done
