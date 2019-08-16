@@ -1,23 +1,24 @@
 #!/bin/sh
 
-PATH=$PATH:~/src/bedtools2/bin
 WORKDIR=.
-INPUTDIR=regularizedFragLibrary
+INPUTDIR=fragLibrary
 FRAGMENTLENGTH=200
 MERGEDIST=1000
 SAMPLELIST=$1
 EXPERIMENTNAME=$2
 OUTPUTDIR=$EXPERIMENTNAME
-GENOME=mm9
-BLACKLISTBED=~/data/UCSC_Downloads/${GENOME}/${GENOME}-blacklist.bed
-RPMTHRESH=10
+GENOME=hg38
+BLACKLISTBED=/s1/share/UCSC_Downloads/${GENOME}/${GENOME}-blacklist.bed
+MACSTHRESH=2
+
+module load bedtools
 
 cd $WORKDIR
 
 mkdir -p $OUTPUTDIR
 
 for SAMPLE in `cat $SAMPLELIST`; do
-  cat $INPUTDIR/$SAMPLE.peaks.bed | awk -v rpmthresh=$RPMTHRESH 'BEGIN{FS="\t";OFS="\t"}{if($NF>rpmthresh) print}'
+  cat $INPUTDIR/$SAMPLE.peaks.bed | awk -v macsthresh=$MACSTHRESH 'BEGIN{FS="\t";OFS="\t"}{if($7>macsthresh) print}'
 done | sort -k 1,1 -k 2,2n > $OUTPUTDIR/mergedPeaks.bed.tmp
 
 bedtools merge -d $MERGEDIST -i $OUTPUTDIR/mergedPeaks.bed.tmp | grep -v chrM | bedtools intersect -v -wa -b $BLACKLISTBED -a - | sort -k 1,1 -k 2,2n > $OUTPUTDIR/mergedPeaks.bed
@@ -28,7 +29,7 @@ rm $OUTPUTDIR/mergedPeaks.bed.tmp
 DIST=8000
 WINDOW=100
 BGBED=$OUTPUTDIR/All_background.bed
-sort -k 1,1 -k 2,2n -u ~/data/UCSC_Downloads/$GENOME/knownGene_${GENOME}.bed | \
+sort -k 1,1 -k 2,2n -u /s1/share/UCSC_Downloads/$GENOME/knownGene_${GENOME}.bed | \
   awk -v dist=$DIST -v win=$WINDOW 'BEGIN{FS=OFS="\t"}{if($2 > dist) print $1,$2-dist,$2-dist+win; print $1,$2+dist,$2+dist+win}' | sort -k 1,1 -k 2,2n -k 3,3n -u > $BGBED
 BGSIZE=`awk 'BEGIN{FS="\t"; sum=0}{sum+=$3-$2}END{print sum}' $BGBED`
 
@@ -81,16 +82,14 @@ for SAMPLE in `cat $SAMPLELIST`; do
   mv $cumFile.tmp $cumFile
 done
 
-# mv $cumFile $cumFile.tmp
-
 #
 # add gene labels
 #
-GENEBED=~/data/UCSC_Downloads/${GENOME}/knownCanonical_RefSeq_${GENOME}.sort.bed
+GENEBED=/s1/share/UCSC_Downloads/${GENOME}/knownCanonical_RefSeq_${GENOME}.sort.bed
 cut -f 2-4 $cumFile | bedtools closest -sorted -t first -a - -b $GENEBED | cut -f 8 > $labelFile
 paste $cumFile $labelFile | \
 awk 'BEGIN{FS="\t";OFS="\t"}{$5=$NF; for(i=1;i<=(NF-2);i++) printf $i "\t"; print $(NF-1)}' > $cumFile.tmp
 cat $headerFile $cumFile.tmp > $cumFile
-# rm $headerFile
-# rm $cumFile.tmp
+rm $headerFile
+rm $cumFile.tmp
 

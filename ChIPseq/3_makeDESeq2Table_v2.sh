@@ -7,18 +7,19 @@ FRAGMENTLENGTH=200
 MERGEDIST=1000
 SAMPLELIST=$1
 EXPERIMENTNAME=$2
-SITESBED=$3
 OUTPUTDIR=$EXPERIMENTNAME
 GENOME=mm9
 BLACKLISTBED=~/data/UCSC_Downloads/${GENOME}/${GENOME}-blacklist.bed
-RPMTHRESH=10
+MACSTHRESH=2
 
 cd $WORKDIR
 
 mkdir -p $OUTPUTDIR
 
-# process the sites bedfile; alternatively copy the bedfile directly (?)
-cat $SITESBED | sort -k 1,1 -k 2,2n > $OUTPUTDIR/mergedPeaks.bed.tmp
+for SAMPLE in `cat $SAMPLELIST`; do
+  cat $INPUTDIR/$SAMPLE.peaks.bed | awk -v macsthresh=$MACSTHRESH 'BEGIN{FS="\t";OFS="\t"}{if($7>macsthresh) print}'
+done | sort -k 1,1 -k 2,2n > $OUTPUTDIR/mergedPeaks.bed.tmp
+
 bedtools merge -d $MERGEDIST -i $OUTPUTDIR/mergedPeaks.bed.tmp | grep -v chrM | bedtools intersect -v -wa -b $BLACKLISTBED -a - | sort -k 1,1 -k 2,2n > $OUTPUTDIR/mergedPeaks.bed
 rm $OUTPUTDIR/mergedPeaks.bed.tmp
 

@@ -1,18 +1,19 @@
 #!/bin/sh
 
-GENOME=mm9
-TEMPLATE=~/templates/workflows/RNAseq/qsub_mapAndCount
-COUNTSFILE=htseq_counts.txt
+GENOME=hg38
+FASTQFOLDER=./fastq
+
+TEMPLATE=slurm_mapAndCount_hisat2
 
 mkdir -p scripts
 
 WORKDIR=`pwd`
 
 while read -r line; do
-  SAMPLENAME=`echo "$line" | cut -f 1`
-  FASTQFILE=`echo "$line" | cut -f 2`
+  SAMPLENAME=$(echo "$line" | cut -f 1)
+  FASTQFILE=$(echo "$line" | cut -f 2)
 
-  sed -e s%XXSAMPLENAMEXX%$SAMPLENAME% -e s%XXWORKDIRXX%$WORKDIR% -e s%XXGENOMEXX%$GENOME% -e s%XXFASTQFILEXX%$FASTQFILE% $TEMPLATE > scripts/qsub_mapAndCount_${SAMPLENAME}
+  sed -e s%XXSAMPLENAMEXX%$SAMPLENAME% -e s%XXWORKDIRXX%$WORKDIR% -e s%XXGENOMEXX%$GENOME% -e s%XXFASTQFILEXX%$FASTQFILE% $TEMPLATE -e s%XXFASTQFOLDERXX%$FASTQFOLDER% > scripts/mapAndCount_${SAMPLENAME}.slurm
 done < sampleList.txt
 
 cut -f 1 sampleList.txt > All_conditions.txt

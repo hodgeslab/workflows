@@ -2,7 +2,7 @@
 
 GENOME=$1
 WORKDIR=`pwd`
-TEMPLATE=~/templates/workflows/ChIPseq/macs_single
+TEMPLATE=~/templates/workflows/ChIPseq/macs2_single_v2
 
 mkdir -p scripts
 

@@ -3,8 +3,11 @@
 WORKDIR=XXWORKDIRXX
 GENOME=XXGENOMEXX
 
-PATH=$PATH:~/src/bedtools2/bin
 GENOMEFILE=~/data/UCSC_Downloads/${GENOME}/chrom.sizes
+
+module load common
+module load bedtools
+module load UCSC
 
 cd $WORKDIR
 
@@ -16,7 +19,6 @@ for NAME in `cut -f 1 sampleList.txt`; do
   if [ ! -r ${BEDGRAPHFILE}.gz ]; then
     READCOUNT=`samtools view -c $BAMFILE | awk '{ print 1e6/$1 }'`
     bedtools genomecov -scale $READCOUNT -bg -split -trackline -trackopts "name=\"$NAME\"" -ibam $BAMFILE -g $GENOMEFILE > $BEDGRAPHFILE
-#    gunzip ${BEDGRAPHFILE}.gz
     bedGraphToBigWig $BEDGRAPHFILE $GENOMEFILE $BIGWIGFILE
     gzip $BEDGRAPHFILE
   fi

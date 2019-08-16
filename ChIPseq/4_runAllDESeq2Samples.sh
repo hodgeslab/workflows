@@ -4,7 +4,7 @@ EXPERIMENTS="All_conditions"
 
 for i in $EXPERIMENTS; do
 # rm -rf $i/merged*
-# sh 3_makeDESeq2Table.sh $i.txt $i
+ sh 3_makeDESeq2Table_v2.sh $i.txt $i
  cd $i; Rscript ~/templates/DESeq2/ChIP/compare_control_treat_heatscatter.R rawCounts.txt 2; cd ..;
 done
 
