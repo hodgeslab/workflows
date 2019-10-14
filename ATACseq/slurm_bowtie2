@@ -30,10 +30,10 @@ READ2=`basename $READ2 | sed s/.fastq.*/.trim.fastq.gz/`
 
 # do mapping of paired end reads
 bowtie2 -p 8 -x $BOWTIE2INDEX --maxins 2000 -N 1 -1 ${READ1} -2 ${READ2} -S ${SAMPLENAME}.sam
-samtools view -b -S ${SAMPLENAME}.sam > ${SAMPLENAME}.bam
+samtools view -b -S ${SAMPLENAME}.sam | samtools sort -n -o ${SAMPLENAME}.bam -
 
 # make fragments bed file
 # use only properly paired (FLAG == 0x2) reads to BED format
 # remove mitotic chromosomal reads
-samtools view -bf 0x2 ${SAMPLENAME}.bam | bedtools bamtobed -i stdin -bedpe | grep -v M | grep -v random | grep -v Un | \
-awk -v mapq=$MAPQ 'BEGIN{FS=OFS="\t"}{if($8 >= mapq) print "chr"$1,$2,$6,$6-$2,$8,"+"}' | sort --parallel=4 -S 16G -k 1,1 -k 2,2n -k 3,3n -u > ${SAMPLENAME}.bed
+samtools view -bf 0x2 ${SAMPLENAME}.bam | bedtools bamtobed -i stdin -bedpe | grep -vw M | grep -v random | grep -v Un | \
+awk -v mapq=$MAPQ 'BEGIN{FS=OFS="\t"}{if($8 >= mapq) print "chr"$1,$2,$6,$6-$2,$8,"+"}' | sort --parallel=4 -k 1,1 -k 2,2n -k 3,3n -u > ${SAMPLENAME}.bed
