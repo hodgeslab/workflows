@@ -236,6 +236,6 @@ plotFoldChangeCorrelation <- function (resdata, axisLim=1,sigthresh=0.10, numCon
 if(numControl > 1 && numTreat > 1) {
   pdf("diffexpr-log2correlation.pdf", useDingbats=F)
   par(oma=c(1,1,1,1),mar=c(5,5,4,1)+0.1,cex.lab=2.25,cex.axis=2.25)
-  plotFoldChangeCorrelation(resdata,axisLim=2.25)
+  plotFoldChangeCorrelation(resdata,axisLim=2.25,numControl=numControl)
   dev.off()
 }
