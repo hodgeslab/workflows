@@ -161,7 +161,7 @@ maplot <- function (res, thresh=0.10, foldthresh=log2(1.5), labelthresh=1.5, lab
 pdf("diffexpr-maplot.pdf",useDingbats=F)
 par(oma=c(1,1,1,1),mar=c(5,5,4,1)+0.1,cex.lab=2.25,cex.axis=2.25)
 #DESeq2::plotMA(res, ylim=c(-2.25,2.25), ylab="log2 fold change", xlab="mean counts (norm.)")
-maplot(res, ylim=c(-2.25,2.25), ylab="log2 fold change", xlab="log10 peak intensity (norm.)")
+maplot(res, ylim=c(-2.25,2.25), ylab="log2 fold change", xlab="log10 counts (norm.)")
 abline(h=-log2(1.5),col="#0071bc",lwd=2)
 abline(h=log2(1.5),col="#d85218",lwd=2)
 #require(calibrate)

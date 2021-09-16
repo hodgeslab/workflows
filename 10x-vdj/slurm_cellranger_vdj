@@ -1,0 +1,26 @@
+#!/bin/bash
+#SBATCH --partition=normal
+#SBATCH --export=NONE
+#SBATCH --time=24:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+#SBATCH --mem-per-cpu=4G
+#SBATCH --output="%x.o%j"
+#SBATCH --error="%x.e%j"
+
+SAMPLENAME=XXSAMPLENAMEXX
+WORKDIR=XXWORKDIRXX
+FASTQDIR=XXFASTQDIRXX
+GENOME=XXGENOMEXX
+REFDATA=/s1/opt/cellranger-5.0.1/refdata-cellranger-vdj-${GENOME}-alts-ensembl-5.0.0
+
+cd $WORKDIR
+
+module load cellranger
+
+cellranger vdj \
+  --id=${SAMPLENAME} \
+  --sample=${SAMPLENAME} \
+  --reference=${REFDATA} \
+  --fastqs=${FASTQDIR} \
+  --localcores=32 --localmem=128

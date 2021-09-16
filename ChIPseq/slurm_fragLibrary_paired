@@ -1,0 +1,48 @@
+#!/bin/bash
+#SBATCH --partition=normal
+#SBATCH --export=NONE
+#SBATCH --time=6:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=2
+#SBATCH --mem-per-cpu=4G
+#SBATCH --output="%x.o%j"
+#SBATCH --error="%x.e%j"
+
+module load bedtools
+module load common
+module load UCSC
+
+WORKDIR=XXWORKDIRXX
+OUTDIR=XXOUTDIRXX
+CONDITION=XXCONDITIONXX
+GENOME=XXGENOMEXX
+GENOMEFILE=/s1/share/UCSC_Downloads/${GENOME}/chrom.sizes
+
+cd $WORKDIR
+
+for FRAGMENTSBED in ${CONDITION}_rep?.bed; do
+  SAMPLENAME=$(echo $FRAGMENTSBED | sed s/.bed//)
+  PEAKBEDFILE=${OUTDIR}/${SAMPLENAME}.peaks.bed
+  PEAKBEDTMP=${OUTDIR}/${SAMPLENAME}.peaks.bed.tmp
+
+  cp $FRAGMENTSBED $OUTDIR
+  bedtools intersect -sorted -c -a ${SAMPLENAME}_peaks.bed -b ${SAMPLENAME}.bed > $PEAKBEDTMP
+  TOTAL=$(awk 'BEGIN{FS="\t"; a=0}{a=a+$NF}END{print a/1e6}' $PEAKBEDTMP)
+  awk -v total=$TOTAL 'BEGIN{FS="\t"; OFS="\t"}{$NF=$NF/total;print}' $PEAKBEDTMP > $PEAKBEDFILE
+  rm $PEAKBEDTMP
+
+  BEDGRAPHFILE=${OUTDIR}/$(echo $FRAGMENTSBED | sed s/.bed/.bedGraph/)
+  BIGWIGFILE=${OUTDIR}/$(basename $BEDGRAPHFILE | sed s/.bedGraph/.bigWig/)
+  # READCOUNT=$(bedtools intersect -sorted -a $PEAKBEDFILE -b $FRAGMENTSBED | wc -l | awk '{ print 1e6/$1 }')
+  READCOUNT=$(wc -l $FRAGMENTSBED | awk '{ print 1e6/$1 }')
+  # HCH bigWig and bedGraph files are raw counts, not normalized
+  # bedtools genomecov -scale $READCOUNT -bg -trackline -trackopts "name=\"$SAMPLENAME\"" -i $FRAGMENTSBED -g $GENOMEFILE > $BEDGRAPHFILE
+  bedtools genomecov -bg -trackline -trackopts "name=\"$SAMPLENAME\"" -i $FRAGMENTSBED -g $GENOMEFILE > $BEDGRAPHFILE
+  bedGraphToBigWig $BEDGRAPHFILE $GENOMEFILE $BIGWIGFILE
+  gzip $BEDGRAPHFILE
+done
+
+# make the mean of the condition across the first two replicates
+# wiggletools mean $OUTDIR/${CONDITION}_rep1.bigWig $OUTDIR/${CONDITION}_rep2.bigWig > $OUTDIR/${CONDITION}_mean.wig
+# wigToBigWig $OUTDIR/${CONDITION}_mean.wig $GENOMEFILE $OUTDIR/${CONDITION}_mean.bigWig
+# rm $OUTDIR/${CONDITION}_mean.wig

@@ -22,7 +22,7 @@ pathways <- gmtPathways(gmtFile)
 str(head(pathways))
 
 # perform gsea
-fgseaRes <- fgsea(pathways, ranks, minSize=15, maxSize=500, nperm=1000)
+fgseaRes <- fgsea(pathways, ranks, minSize=15, maxSize=500, nperm=1e6, nproc=4)
 fn <- paste0(outDir,"/summary.txt")
 
 fgseaResOut <- fgseaRes

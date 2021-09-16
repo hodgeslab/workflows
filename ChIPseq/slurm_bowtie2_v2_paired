@@ -1,0 +1,67 @@
+#!/bin/bash
+#SBATCH --partition=normal
+#SBATCH --export=NONE
+#SBATCH --time=48:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem-per-cpu=4G
+#SBATCH --output="%x.o%j"
+#SBATCH --error="%x.e%j"
+
+WORKDIR=XXWORKDIRXX
+READ1=XXREAD1XX
+READ2=XXREAD2XX
+SAMPLENAME=XXSAMPLENAMEXX
+GENOME=XXGENOMEXX
+MAPQ=10
+TRIMSCRIPT=/s1/opt/bin/pyadapter_trim.v2.ch.py
+
+# map genome names to folders matching the bowtie2 index structure
+declare -A INDEXDIR=([hg38]="hg38/grch38_1kgmaj" [hg19]="hg19/hg19_1kgmaj" [mm10]="mm10/mm10" [mm9]="mm9/mm9")
+BOWTIE2INDEX=/s1/share/bowtie2_indexes/${INDEXDIR[$GENOME]}
+
+module load python/2.7.5
+module load bowtie2
+module load samtools
+module load bedtools
+module load R
+
+cd $WORKDIR
+
+python2.7 $TRIMSCRIPT -a $READ1 -b $READ2
+READ1=$(basename $READ1 | sed 's/\.\(fastq\|fq\).*/.trim.fastq.gz/')
+READ2=$(basename $READ2 | sed 's/\.\(fastq\|fq\).*/.trim.fastq.gz/')
+
+# do mapping of paired end reads
+bowtie2 -p 4 -x $BOWTIE2INDEX --maxins 2000 -N 1 -1 ${READ1} -2 ${READ2} -S ${SAMPLENAME}.sam
+samtools view -b -S ${SAMPLENAME}.sam | samtools sort -n -o ${SAMPLENAME}.bam -
+
+# make fragments bed file
+# use only properly paired (FLAG == 0x2) reads to BED format
+# remove mitotic chromosomal reads
+
+if [ $GENOME = "hg38" ]; then
+  samtools view -bf 0x2 ${SAMPLENAME}.bam | bedtools bamtobed -i stdin -bedpe | grep -vw M | grep -v random | grep -v Un | \
+  awk -v mapq=$MAPQ 'BEGIN{FS=OFS="\t"}{if($8 >= mapq) print "chr"$1,$2,$6,$6-$2,$8,"+"}' | sort --parallel=4 -k 1,1 -k 2,2n -k 3,3n -u > ${SAMPLENAME}.bed
+elif [ $GENOME = "hg19" ]; then
+  samtools view -bf 0x2 ${SAMPLENAME}.bam | bedtools bamtobed -i stdin -bedpe | grep -vw M | grep -v random | grep -v Un | \
+  awk -v mapq=$MAPQ 'BEGIN{FS=OFS="\t"}{if($8 >= mapq) print "chr"$1,$2,$6,$6-$2,$8,"+"}' | sort --parallel=4 -k 1,1 -k 2,2n -k 3,3n -u > ${SAMPLENAME}.bed
+elif [ $GENOME = "mm10" ]; then
+  samtools view -bf 0x2 ${SAMPLENAME}.bam | bedtools bamtobed -i stdin -bedpe | grep -vw chrM | grep -v random | grep -v Un | \
+  awk -v mapq=$MAPQ 'BEGIN{FS=OFS="\t"}{if($8 >= mapq) print $1,$2,$6,$6-$2,$8,"+"}' | sort --parallel=4 -k 1,1 -k 2,2n -k 3,3n -u > ${SAMPLENAME}.bed
+elif [ $GENOME = "mm9" ]; then
+  samtools view -bf 0x2 ${SAMPLENAME}.bam | bedtools bamtobed -i stdin -bedpe | grep -vw chrM | grep -v random | grep -v Un | \
+  awk -v mapq=$MAPQ 'BEGIN{FS=OFS="\t"}{if($8 >= mapq) print $1,$2,$6,$6-$2,$8,"+"}' | sort --parallel=4 -k 1,1 -k 2,2n -k 3,3n -u > ${SAMPLENAME}.bed
+fi
+
+# plot fragment size distribution
+mkdir -p qc
+cat ${SAMPLENAME}.bed | awk -f fragSizeDist.awk > qc/${SAMPLENAME}_fragSize.txt
+Rscript plotFragSize.R qc/${SAMPLENAME}_fragSize.txt qc/${SAMPLENAME}_fragSize.pdf
+
+# Quality control: Count matches to Mycoplasma arginini genome
+BOWTIE2INDEX=/s1/share/bowtie2_indexes/Marginini/genome
+bowtie2 -p 4 -x $BOWTIE2INDEX --maxins 2000 -N 1 -1 ${READ1} -2 ${READ2} -S ${SAMPLENAME}_myco.sam
+samtools view -bS -q 10 ${SAMPLENAME}_myco.sam > ${SAMPLENAME}_myco_mapq10.bam
+MYCOREADS=$(samtools view -c -F 260 ${SAMPLENAME}_myco_mapq10.bam)
+echo "Mycoplasma arginini quality control: ${MYCOREADS} reads mapped"

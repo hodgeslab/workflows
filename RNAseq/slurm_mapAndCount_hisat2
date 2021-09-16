@@ -3,8 +3,8 @@
 #SBATCH --export=NONE
 #SBATCH --time=24:00:00
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem-per-cpu=8G
+#SBATCH --cpus-per-task=4
+#SBATCH --mem-per-cpu=4G
 #SBATCH --output="%x.o%j"
 #SBATCH --error="%x.e%j"
 
@@ -29,12 +29,12 @@ module load python/2.7.5
 cd $WORKDIR
 mkdir -p $SAMPLENAME
 
-hisat2 -p 8 -5 10 -S ${SAMPLENAME}/${SAMFILE} -x $GENOMEINDEX -U ${FASTQFOLDER}/${FASTQFILE}
+hisat2 -p 4 -5 10 -S ${SAMPLENAME}/${SAMFILE} -x $GENOMEINDEX -U ${FASTQFOLDER}/${FASTQFILE}
 ln -s ${SAMPLENAME}/${COUNTSFILE} ${SAMPLENAME}_counts.txt
 ln -s ${SAMPLENAME}/${SORTBAMFILE} ${SAMPLENAME}.bam
 
 cd $SAMPLENAME
 samtools view -bS -q 10 ${SAMFILE} > ${QUALBAMFILE}
 samtools sort -o ${SORTBAMFILE} -T sort ${QUALBAMFILE}
-htseq-count -f bam -r pos --stranded=reverse $SORTBAMFILE $GTFFILE > $COUNTSFILE
+htseq-count -f bam -r pos --stranded=no $SORTBAMFILE $GTFFILE > $COUNTSFILE
 

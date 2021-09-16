@@ -1,0 +1,22 @@
+#!/bin/bash
+#SBATCH --partition=normal
+#SBATCH --export=NONE
+#SBATCH --time=24:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+#SBATCH --mem-per-cpu=4G
+#SBATCH --output="%x.o%j"
+#SBATCH --error="%x.e%j"
+
+SAMPLENAME=XXSAMPLENAMEXX
+WORKDIR=XXWORKDIRXX
+INFILE=${SAMPLENAME}.csv
+
+cd $WORKDIR
+
+module load cellranger
+
+cellranger aggr \
+  --id=${SAMPLENAME} \
+  --csv=${INFILE}
+  --localcores=32 --localmem=128

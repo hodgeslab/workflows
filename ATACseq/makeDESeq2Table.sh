@@ -76,9 +76,10 @@ echo >> $headerFile
 
 awk 'BEGIN {FS="\t"; OFS="\t" } { print NR,$1,$2,$3,"" }' $OUTPUTDIR/mergedPeaks.bed > $cumFile
 for SAMPLE in `cat $SAMPLELIST`; do
-  MERGEDPEAKSBED=$OUTPUTDIR/mergedPeaks_count-${SAMPLE}.fragments_${FRAGMENTLENGTH}bp.bed
+  COUNTBED=$OUTPUTDIR/mergedPeaks_count-${SAMPLE}.fragments_${FRAGMENTLENGTH}bp.bed
   COUNTMINUSBGBED=$OUTPUTDIR/mergedPeaks_countMinusBg-${SAMPLE}.fragments_${FRAGMENTLENGTH}bp.bed
-  cut -f 4 $COUNTMINUSBGBED | paste $cumFile - > $cumFile.tmp
+#  cut -f 4 $COUNTMINUSBGBED | paste $cumFile - > $cumFile.tmp
+  cut -f 4 $COUNTBED | paste $cumFile - > $cumFile.tmp
   mv $cumFile.tmp $cumFile
 done
 
@@ -86,7 +87,7 @@ done
 # add gene labels
 #
 GENEBED=/s1/share/UCSC_Downloads/${GENOME}/knownCanonical_RefSeq_${GENOME}.sort.bed
-cut -f 2-4 $cumFile | bedtools closest -sorted -t first -a - -b $GENEBED | cut -f 8 > $labelFile
+cut -f 2-4 $cumFile | bedtools closest -sorted -t first -a - -b $GENEBED | cut -f 7 > $labelFile
 paste $cumFile $labelFile | \
 awk 'BEGIN{FS="\t";OFS="\t"}{$5=$NF; for(i=1;i<=(NF-2);i++) printf $i "\t"; print $(NF-1)}' > $cumFile.tmp
 cat $headerFile $cumFile.tmp > $cumFile

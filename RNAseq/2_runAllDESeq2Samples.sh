@@ -9,19 +9,19 @@ function all_vs_all () {
   for irep in `cat $INFILE`; do
     iname=`sed s/_rep[0-9]*// <<< $irep`
 
-    if grep -q "$iname" <<< $iseen; then
+    if grep -qw "$iname" <<< $iseen; then
       continue;
     fi
 
     jseen=""
     for jrep in `cat $INFILE`; do
       jname=`sed s/_rep[0-9]*// <<< $jrep`
-      if ! (grep -q "$jname" <<< $iseen || grep -q "$jname" <<< $iname || grep -q "$jname" <<< $jseen); then
+      if ! (grep -qw "$jname" <<< $iseen || grep -qw "$jname" <<< $iname || grep -qw "$jname" <<< $jseen); then
         exptname="${iname}-${jname}";
         # assemble txt file from i and j
         echo "$exptname"
-        grep $iname $INFILE > ${exptname}.txt
-        grep $jname $INFILE >> ${exptname}.txt
+        grep -e "^${iname}_rep[0-9]*" $INFILE > ${exptname}.txt
+        grep -e "^${jname}_rep[0-9]*" $INFILE >> ${exptname}.txt
       fi
     jseen="$jseen $jname"
     done

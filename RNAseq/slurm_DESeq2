@@ -4,7 +4,7 @@
 #SBATCH --time=24:00:00
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
-#SBATCH --mem-per-cpu=8G
+#SBATCH --mem-per-cpu=4G
 #SBATCH --output="%x.o%j"
 #SBATCH --error="%x.e%j"
 
@@ -16,7 +16,7 @@ module load R
 cd $WORKDIR
 
 CONTROLSTR=$(head -1 ${EXPERIMENT}.txt | sed s/_rep[0-9]//)
-CONTROLNUM=$(grep "$CONTROLSTR" ${EXPERIMENT}.txt | wc -l)
+CONTROLNUM=$(grep -e "^${CONTROLSTR}_rep[0-9]*" ${EXPERIMENT}.txt | wc -l)
 TREATSTR=$(grep -v "$CONTROLSTR" ${EXPERIMENT}.txt | head -1 | sed s/_rep[0-9]//)
 
 sh makeDESeq2Table.sh ${EXPERIMENT}.txt ${EXPERIMENT}

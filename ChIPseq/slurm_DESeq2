@@ -1,0 +1,52 @@
+#!/bin/bash
+#SBATCH --partition=normal
+#SBATCH --export=NONE
+#SBATCH --time=24:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem-per-cpu=4G
+#SBATCH --output="%x.o%j"
+#SBATCH --error="%x.e%j"
+
+WORKDIR=XXWORKDIRXX
+EXPERIMENT=XXEXPERIMENTXX
+GENOME=XXGENOMEXX
+FRAGDIR=${WORKDIR}/fragLibrary
+FRAGMENTLENGTH=200
+
+module load R
+
+cd $WORKDIR
+rm -rf ${EXPERIMENT}/merged*
+sh makeDESeq2Table.sh ${EXPERIMENT}.txt ${EXPERIMENT}
+
+CONTROLSTR=$(head -1 ${EXPERIMENT}.txt | sed s/_rep[0-9]//)
+CONTROLNUM=$(grep -e "^${CONTROLSTR}_rep[0-9]*" ${EXPERIMENT}.txt | wc -l)
+TREATSTR=$(grep -v "$CONTROLSTR" ${EXPERIMENT}.txt | head -1 | sed s/_rep[0-9]//)
+
+cd ${EXPERIMENT}
+
+# the core DESeq2 differential peak calling step
+Rscript ../DESeq2_compare_control_treat.R rawCounts.txt ${CONTROLNUM}
+
+# make peak calls (increased, decreased, unchanged) based on DESeq2 output
+PTHRESH=0.10
+FTHRESH=0.58496250072
+cat diffexpr-results.txt | awk -v pthresh=$PTHRESH -v fthresh=$FTHRESH 'BEGIN{OFS="\t"; FS="\t" } NR > 1 { if($7 < pthresh && $3 <= -fthresh) print $9,$10,$11,$8,$7,$3 }' > treat-decreased.bed
+cat diffexpr-results.txt | awk -v pthresh=$PTHRESH -v fthresh=$FTHRESH 'BEGIN{OFS="\t"; FS="\t" } NR > 1 { if($7 < pthresh && $3 >= fthresh) print $9,$10,$11,$8,$7,$3 }' > treat-increased.bed
+cat diffexpr-results.txt | awk -v pthresh=$PTHRESH -v fthresh=$FTHRESH 'BEGIN{OFS="\t"; FS="\t" } NR > 1 { if($7 > pthresh || $7 == "NA" || ($3 > -fthresh && $3 < fthresh)) print $9,$10,$11,$8,$7,$3 }' > unchanged.bed
+
+# prepare differential heat maps based on first two replicates; for both control and treatment
+# the shell script and R script both analyze treat-increased and treat-decreased, but not unchanged
+# however, both can be modified to include unchanged if it is desired
+sh ../makeMetaGeneMatrix.sh $FRAGDIR/${CONTROLSTR}_rep1.fragments_${FRAGMENTLENGTH}bp.bigWig $FRAGDIR/${CONTROLSTR}_rep2.fragments_${FRAGMENTLENGTH}bp.bigWig ${CONTROLSTR}
+sh ../makeMetaGeneMatrix.sh $FRAGDIR/${TREATSTR}_rep1.fragments_${FRAGMENTLENGTH}bp.bigWig $FRAGDIR/${TREATSTR}_rep2.fragments_${FRAGMENTLENGTH}bp.bigWig ${TREATSTR}
+Rscript ../plotDiffHeatmaps.R ${CONTROLSTR} ${TREATSTR} sizeFactors.txt
+
+# chromVAR
+Rscript ../chromVAR_basic_${GENOME}.R ${CONTROLSTR} ${TREATSTR}
+
+# HOMER
+sh ../homer_basic.sh $GENOME
+
+cd ..

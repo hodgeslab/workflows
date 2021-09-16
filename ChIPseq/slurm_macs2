@@ -1,0 +1,26 @@
+#!/bin/bash
+#SBATCH --partition=normal
+#SBATCH --export=NONE
+#SBATCH --time=4:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=2
+#SBATCH --mem-per-cpu=4G
+#SBATCH --output="%x.o%j"
+#SBATCH --error="%x.e%j"
+
+WORKDIR=XXWORKDIRXX
+SAMPLENAME=XXSAMPLENAMEXX
+CONTROLNAME=XXCONTROLNAMEXX
+GENOME=XXGENOMEXX
+
+FRAGMENTLENGTH=200
+TREATBED=${SAMPLENAME}.bed
+CONTROLBED=${CONTROLNAME}.bed
+
+module load python/2.7.5
+cd $WORKDIR
+
+# call peaks with MACS and make fragments file
+declare -A GSIZE=([hg38]="hs" [hg19]="hs" [mm10]="mm" [mm9]="mm")
+macs2 callpeak --treatment $TREATBED --control $CONTROLBED --format BED --name $SAMPLENAME --gsize ${GSIZE[$GENOME]}  --nomodel --extsize 200
+ln -s ${SAMPLENAME}_peaks.narrowPeak ${SAMPLENAME}_peaks.bed

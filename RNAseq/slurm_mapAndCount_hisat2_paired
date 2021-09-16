@@ -3,8 +3,8 @@
 #SBATCH --export=NONE
 #SBATCH --time=24:00:00
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem-per-cpu=8G
+#SBATCH --cpus-per-task=4
+#SBATCH --mem-per-cpu=4G
 #SBATCH --output="%x.o%j"
 #SBATCH --error="%x.e%j"
 
@@ -31,7 +31,7 @@ cd $WORKDIR
 
 mkdir -p $SAMPLENAME
 
-hisat2 -p 8 -5 10 -S ${SAMPLENAME}/${SAMFILE} -x $GENOMEINDEX -1 $FASTQFOLDER/$READ1 -2 $FASTQFOLDER/$READ2
+hisat2 -p 4 -5 10 -S ${SAMPLENAME}/${SAMFILE} -x $GENOMEINDEX -1 $FASTQFOLDER/$READ1 -2 $FASTQFOLDER/$READ2
 ln -s ${SAMPLENAME}/${COUNTSFILE} ${SAMPLENAME}_counts.txt
 ln -s ${SAMPLENAME}/${SORTBAMFILE} ${SAMPLENAME}.bam
 
@@ -39,4 +39,16 @@ cd $SAMPLENAME
 samtools view -bS -q 10 ${SAMFILE} > ${QUALBAMFILE}
 samtools sort -o ${SORTBAMFILE} -T sort ${QUALBAMFILE}
 htseq-count -f bam -r pos --stranded=no $SORTBAMFILE $GTFFILE > $COUNTSFILE
+cd ..
 
+# Quality control: Count matches to Mycoplasma arginini genome
+GENOME=Marginini
+GENOMEINDEX=/s1/share/hisat2_indexes/${GENOME}/genome
+SAMFILE=accepted_hits_myco.sam
+QUALBAMFILE=accepted_hits_mapq10_myco.bam
+hisat2 -p 4 -5 10 -S ${SAMPLENAME}/${SAMFILE} -x $GENOMEINDEX -1 $FASTQFOLDER/$READ1 -2 $FASTQFOLDER/$READ2
+cd $SAMPLENAME
+samtools view -bS -q 10 ${SAMFILE} > ${QUALBAMFILE}
+MYCOREADS=$(samtools view -c -F 260 ${QUALBAMFILE})
+echo "Mycoplasma arginini quality control: ${MYCOREADS} reads mapped"
+cd ..
