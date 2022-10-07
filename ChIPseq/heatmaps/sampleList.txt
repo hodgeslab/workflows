@@ -1,0 +1,12 @@
+ATAC_THP1_DMSO_rep1	ATAC-seq/ATAC_THP1_DMS_rep1.fragments_200bp.bigWig	sites.bed
+ATAC_THP1_DMSO_rep2	ATAC-seq/ATAC_THP1_DMS_rep2.fragments_200bp.bigWig	sites.bed
+ATAC_THP1_BRM014_rep1	ATAC-seq/ATAC_THP1_B72_rep1.fragments_200bp.bigWig	sites.bed
+ATAC_THP1_BRM014_rep2	ATAC-seq/ATAC_THP1_B72_rep2.fragments_200bp.bigWig	sites.bed
+ChIP_PU1_THP1_DMSO_rep1	PU1ChIP-seq/ChIP_THP1_PU1_DMSO_rep1.bigWig	sites.bed
+ChIP_PU1_THP1_DMSO_rep2	PU1ChIP-seq/ChIP_THP1_PU1_DMSO_rep2.bigWig	sites.bed
+ChIP_PU1_THP1_BRM014_rep1	PU1ChIP-seq/ChIP_THP1_PU1_BRM014_rep1.bigWig	sites.bed
+ChIP_PU1_THP1_BRM014_rep2	PU1ChIP-seq/ChIP_THP1_PU1_BRM014_rep2.bigWig	sites.bed
+ChIP_SMARCA4_MOLM13_rep1	SMARCA4ChIP-seq/ChIP_SMARCA4_MOLM13_rep1.fragments_200bp.bigWig	sites.bed
+ChIP_H3K4me1_THP1_rep1	ChIP-THP1-histone/THP1_H3K4me1.bw	sites.bed
+ChIP_H3K4me3_THP1_rep1	ChIP-THP1-histone/THP1_H3K4me3.bw	sites.bed
+ChIP_H3K27ac_THP1_rep1	ChIP-THP1-histone/THP1_H3K27Ac.bw	sites.bed

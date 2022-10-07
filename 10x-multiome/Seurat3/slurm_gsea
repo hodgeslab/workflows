@@ -1,0 +1,22 @@
+#!/bin/bash
+#SBATCH --partition=normal
+#SBATCH --export=NONE
+#SBATCH --time=24:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem-per-cpu=4G
+#SBATCH --output="%x.o%j"
+#SBATCH --error="%x.e%j"
+
+WORKDIR=XXWORKDIRXX
+EXPERIMENT=XXEXPERIMENTXX
+
+module load R
+
+cd $WORKDIR/$EXPERIMENT
+
+for CELLTYPE in *; do
+  cd $CELLTYPE
+  Rscript ../../gsea_basic.R
+  cd ..
+done

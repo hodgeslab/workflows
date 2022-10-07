@@ -1,0 +1,38 @@
+#!/bin/bash
+#SBATCH --partition=normal
+#SBATCH --export=NONE
+#SBATCH --time=24:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+#SBATCH --mem-per-cpu=4G
+#SBATCH --output="%x.o%j"
+#SBATCH --error="%x.e%j"
+
+GENOME=mm10
+SAMPLENAME=All_conditions
+WORKDIR=$(pwd)
+
+cd $WORKDIR
+
+# a list of the library names is expected in the file "All_conditions.txt" with each library
+# name on a single line. library names should match the folder name in the present directory
+# and contain the output of the cellranger count pipestance (i.e. contain the subfolder "outs" and
+# its normal contents)
+
+# build libraries.csv file
+(echo "library_id,molecule_h5"
+for LIBRARY in $(cat All_conditions.txt); do
+  echo "${LIBRARY},${WORKDIR}/${LIBRARY}/outs/molecule_info.h5"
+done) >	${SAMPLENAME}.csv
+
+INFILE=${SAMPLENAME}.csv
+
+# load the cellranger environment module; this may or may not be needed for each user's
+# configuration
+module load cellranger
+
+# may need to adjust the cores and localmem parameters depending on your computational configuration
+cellranger aggr \
+  --id=${SAMPLENAME} \
+  --csv=${INFILE}
+  --localcores=32 --localmem=128

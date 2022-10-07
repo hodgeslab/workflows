@@ -10,9 +10,9 @@ for NAME in $(cut -f 1 $INFILE); do
 
   for PROCESS in ${PROCESSES}; do
     FILE=${INDIR}/bowtie2_${NAME}.slurm.e${PROCESS}
-    NREADS=$(grep "reads" ${FILE} | cut -f 1 -d " " | head -1)
-    MAPFREQ=$(grep "overall" ${FILE} | cut -f 1 -d " " | head -1)
-    NUNMAPPED=$(grep "aligned 0 times" ${FILE} | sed 's/^[ ]*//' | cut -f 1 -d " " | head -1)
+    NREADS=$(grep "reads" ${FILE} | cut -f 1 -d " ")
+    MAPFREQ=$(grep "overall" ${FILE} | cut -f 1 -d " ")
+    NUNMAPPED=$(grep "aligned 0 times" ${FILE} | sed 's/^[ ]*//' | cut -f 1 -d " ")
     NMAPPED=$(expr ${NREADS} - ${NUNMAPPED})
     echo "${NAME}	${NREADS}	${NMAPPED}	${NUNMAPPED}	${MAPFREQ}	${PROCESS}"
   done

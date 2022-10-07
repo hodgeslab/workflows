@@ -41,10 +41,10 @@ samtools view -b -S ${SAMPLENAME}.sam | samtools sort -n -o ${SAMPLENAME}.bam -
 # remove mitotic chromosomal reads
 
 if [ $GENOME = "hg38" ]; then
-  samtools view -bf 0x2 ${SAMPLENAME}.bam | bedtools bamtobed -i stdin -bedpe | grep -vw M | grep -vw EBV | grep -v random | grep -v Un | \
+  samtools view -bf 0x2 ${SAMPLENAME}.bam | bedtools bamtobed -i stdin -bedpe | grep -vw M | grep -v random | grep -v Un | \
   awk -v mapq=$MAPQ 'BEGIN{FS=OFS="\t"}{if($8 >= mapq) print "chr"$1,$2,$6,$6-$2,$8,"+"}' | sort --parallel=4 -k 1,1 -k 2,2n -k 3,3n -u > ${SAMPLENAME}.bed
 elif [ $GENOME = "hg19" ]; then
-  samtools view -bf 0x2 ${SAMPLENAME}.bam | bedtools bamtobed -i stdin -bedpe | grep -vw M | grep -vw EBV | grep -v random | grep -v Un | \
+  samtools view -bf 0x2 ${SAMPLENAME}.bam | bedtools bamtobed -i stdin -bedpe | grep -vw M | grep -v random | grep -v Un | \
   awk -v mapq=$MAPQ 'BEGIN{FS=OFS="\t"}{if($8 >= mapq) print "chr"$1,$2,$6,$6-$2,$8,"+"}' | sort --parallel=4 -k 1,1 -k 2,2n -k 3,3n -u > ${SAMPLENAME}.bed
 elif [ $GENOME = "mm10" ]; then
   samtools view -bf 0x2 ${SAMPLENAME}.bam | bedtools bamtobed -i stdin -bedpe | grep -vw chrM | grep -v random | grep -v Un | \

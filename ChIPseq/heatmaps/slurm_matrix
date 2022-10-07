@@ -1,0 +1,23 @@
+#!/bin/bash
+#SBATCH --partition=normal
+#SBATCH --export=NONE
+#SBATCH --time=1:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem-per-cpu=4G
+#SBATCH --output="%x.o%j"
+#SBATCH --error="%x.e%j"
+
+WORKDIR=XXWORKDIRXX
+BIGWIG=XXBIGWIGXX
+SAMPLENAME=XXSAMPLENAMEXX
+BEDFILE=XXBEDFILEXX
+MAXDIST=4000
+TILE=10
+BEDNAME=$(basename $BEDFILE .bed)
+OUT=${BEDNAME}_${SAMPLENAME}.txt
+
+module load common
+
+cd $WORKDIR
+bwtool -keep-bed matrix ${MAXDIST}:${MAXDIST} $BEDFILE -tiled-averages=${TILE} $BIGWIG $OUT

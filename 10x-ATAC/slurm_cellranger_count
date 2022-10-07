@@ -9,14 +9,19 @@
 #SBATCH --error="%x.e%j"
 
 SAMPLENAME=XXSAMPLENAMEXX
+SAMPLEID=XXSAMPLEIDXX
 WORKDIR=XXWORKDIRXX
-INFILE=${SAMPLENAME}.csv
+FASTQDIR=XXFASTQDIRXX
+GENOME=XXGENOMEXX
+REFDATA=/s1/opt/cellranger-atac-2.1.0/refdata-cellranger-arc-${GENOME}-2020-A-2.0.0
 
 cd $WORKDIR
 
-module load cellranger
+module load cellranger-atac
 
-cellranger aggr \
+cellranger-atac count \
   --id=${SAMPLENAME} \
-  --csv=${INFILE} \
+  --sample=${SAMPLEID} \
+  --reference=${REFDATA} \
+  --fastqs=${FASTQDIR} \
   --localcores=32 --localmem=128

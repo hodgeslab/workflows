@@ -1,0 +1,28 @@
+#!/bin/bash
+#SBATCH --partition=normal
+#SBATCH --export=NONE
+#SBATCH --time=48:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem-per-cpu=6G
+#SBATCH --output="%x.o%j"
+#SBATCH --error="%x.e%j"
+
+SAMPLENAME=XXSAMPLENAMEXX
+WORKDIR=XXWORKDIRXX
+GENOME=XXGENOMEXX
+SINGLETS=qc_DoubletFinder_pass_singlets.txt
+
+REFDATA=/s1/opt/cellranger-arc-2.0.1/refdata-cellranger-arc-${GENOME}-2020-A-2.0.0
+
+cd $WORKDIR
+
+module load cellranger-arc
+
+cellranger-arc reanalyze \
+  --id=${SAMPLENAME}_singlets \
+  --barcodes=${WORKDIR}/${SAMPLENAME}/${SINGLETS} \
+  --matrix=${WORKDIR}/${SAMPLENAME}/outs/raw_feature_bc_matrix.h5 \
+  --atac-fragments=${WORKDIR}/${SAMPLENAME}/outs/atac_fragments.tsv.gz \
+  --reference=${REFDATA} \
+  --localcores=16 --localmem=96

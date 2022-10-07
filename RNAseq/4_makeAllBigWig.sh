@@ -1,7 +1,7 @@
 #!/bin/sh
 
-WORKDIR=XXWORKDIRXX
-GENOME=XXGENOMEXX
+WORKDIR=$(pwd)
+GENOME=hg38
 
 GENOMEFILE=/s1/share/UCSC_Downloads/${GENOME}/chrom.sizes
 
@@ -25,11 +25,11 @@ for NAME in `cut -f 1 sampleList.txt`; do
   fi
 done
 
-for i in `cut -f 1 sampleList.txt|sed s/_rep.//|sort|uniq|tr "\n" " "`; do
-  if [ ! -r ${i}_mean.bigWig ]; then
-    wiggletools mean ${i}_rep1.bigWig ${i}_rep2.bigWig > ${i}_mean.wig
-    wigToBigWig ${i}_mean.wig $GENOMEFILE ${i}_mean.bigWig
-    rm ${i}_mean.wig
-  fi
-done
+# for i in `cut -f 1 sampleList.txt|sed s/_rep.//|sort|uniq|tr "\n" " "`; do
+#   if [ ! -r ${i}_mean.bigWig ]; then
+#     wiggletools mean ${i}_rep1.bigWig ${i}_rep2.bigWig > ${i}_mean.wig
+#     wigToBigWig ${i}_mean.wig $GENOMEFILE ${i}_mean.bigWig
+#     rm ${i}_mean.wig
+#   fi
+# done
 

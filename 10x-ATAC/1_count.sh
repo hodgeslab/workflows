@@ -1,6 +1,6 @@
 #!/bin/sh
 
-GENOME=mm10
+GENOME=hg38
 TEMPLATE=slurm_cellranger_count
 
 mkdir -p scripts

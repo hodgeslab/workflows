@@ -22,7 +22,7 @@ sh makeDESeq2Table.sh ${EXPERIMENT}.txt ${EXPERIMENT}
 
 CONTROLSTR=$(head -1 ${EXPERIMENT}.txt | sed s/_rep[0-9]//)
 CONTROLNUM=$(grep -e "^${CONTROLSTR}_rep[0-9]*" ${EXPERIMENT}.txt | wc -l)
-TREATSTR=$(grep -v "${CONTROLSTR}_rep" ${EXPERIMENT}.txt | head -1 | sed s/_rep[0-9]//)
+TREATSTR=$(grep -v "$CONTROLSTR" ${EXPERIMENT}.txt | head -1 | sed s/_rep[0-9]//)
 
 cd ${EXPERIMENT}
 

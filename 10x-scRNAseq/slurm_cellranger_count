@@ -9,6 +9,7 @@
 #SBATCH --error="%x.e%j"
 
 SAMPLENAME=XXSAMPLENAMEXX
+SAMPLEID=XXSAMPLEIDXX
 WORKDIR=XXWORKDIRXX
 FASTQDIR=XXFASTQDIRXX
 GENOME=XXGENOMEXX
@@ -20,7 +21,7 @@ module load cellranger
 
 cellranger count \
   --id=${SAMPLENAME} \
-  --sample=${SAMPLENAME} \
+  --sample=${SAMPLEID} \
   --transcriptome=${REFDATA} \
   --fastqs=${FASTQDIR} \
   --localcores=32 --localmem=128

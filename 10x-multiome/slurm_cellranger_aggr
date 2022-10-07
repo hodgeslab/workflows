@@ -10,13 +10,16 @@
 
 SAMPLENAME=XXSAMPLENAMEXX
 WORKDIR=XXWORKDIRXX
+GENOME=XXGENOMEXX
 INFILE=${SAMPLENAME}.csv
+REFDATA=/s1/opt/cellranger-arc-2.0.1/refdata-cellranger-arc-${GENOME}-2020-A-2.0.0
 
 cd $WORKDIR
 
-module load cellranger
+module load cellranger-arc
 
-cellranger aggr \
+cellranger-arc aggr \
   --id=${SAMPLENAME} \
   --csv=${INFILE} \
+  --reference=${REFDATA} \
   --localcores=32 --localmem=128
